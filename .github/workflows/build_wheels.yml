@@ -44,11 +44,17 @@ jobs:
         with:
           path: dist/*.tar.gz
 
+
   build_webassembly:
     name: Build WebAssembly
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install python3-dev
 
       - name: Install Emscripten
         run: |
@@ -60,11 +66,10 @@ jobs:
 
       - name: Build WebAssembly
         run: |
-          source ./emsdk/emsdk_env.sh  # Source the environment again in the build step
+          source ./emsdk/emsdk_env.sh
           mkdir -p build
-          emcmake cmake -S . -B build
+          emcmake cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=$PWD/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
           emmake make -C build
-
       - uses: actions/upload-artifact@v2
         with:
           path: ./build/*.wasm
